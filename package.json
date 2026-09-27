@@ -1,0 +1,22 @@
+{
+  "name": "negi-love-singh-ai",
+  "version": "1.0.0",
+  "description": "Secure Gemini-powered chat app with a backend proxy.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "keywords": [
+    "chatbot",
+    "gemini",
+    "express",
+    "tailwind"
+  ],
+  "author": "Negi Love Singh",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.21.2"
+  }
+}

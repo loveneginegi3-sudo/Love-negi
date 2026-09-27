@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="hi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Negi Love Singh AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      html, body {
+        height: 100%;
+      }
+
+      body {
+        overscroll-behavior: none;
+      }
+
+      .chat-scroll {
+        scrollbar-width: thin;
+        scrollbar-color: rgba(148, 163, 184, 0.8) transparent;
+      }
+
+      .chat-scroll::-webkit-scrollbar {
+        width: 8px;
+      }
+
+      .chat-scroll::-webkit-scrollbar-thumb {
+        background: rgba(148, 163, 184, 0.7);
+        border-radius: 9999px;
+      }
+    </style>
+  </head>
+  <body class="bg-slate-950 text-white antialiased">
+    <div class="mx-auto flex h-screen max-w-md flex-col bg-slate-900 shadow-2xl">
+      <header class="border-b border-slate-700 bg-slate-900 px-4 py-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <h1 class="text-lg font-bold text-white">Negi Love Singh AI</h1>
+            <p class="mt-1 flex items-center gap-2 text-xs text-green-400">
+              <span class="h-2.5 w-2.5 rounded-full bg-green-400"></span>
+              Online
+            </p>
+          </div>
+        </div>
+      </header>
+
+      <main id="chat" class="chat-scroll flex-1 space-y-3 overflow-y-auto p-4"></main>
+
+      <footer class="border-t border-slate-700 bg-slate-900 p-3">
+        <form id="chat-form" class="flex items-center gap-2">
+          <input
+            id="msg"
+            type="text"
+            autocomplete="off"
+            placeholder="मैसेज लिखो..."
+            class="flex-1 rounded-full border border-slate-600 bg-slate-800 px-4 py-3 text-sm text-white outline-none transition focus:border-blue-500"
+          />
+          <button
+            type="submit"
+            class="rounded-full bg-blue-600 px-5 py-3 font-semibold text-white transition hover:bg-blue-500 focus:outline-none"
+            aria-label="Send message"
+          >
+            ➤
+          </button>
+        </form>
+      </footer>
+    </div>
+
+    <script>
+      const chat = document.getElementById('chat');
+      const form = document.getElementById('chat-form');
+      const input = document.getElementById('msg');
+
+      function scrollToBottom() {
+        chat.scrollTop = chat.scrollHeight;
+      }
+
+      function addMessage(text, sender = 'bot') {
+        const wrapper = document.createElement('div');
+        wrapper.className = sender === 'user' ? 'flex justify-end' : 'flex justify-start';
+
+        const bubble = document.createElement('div');
+        bubble.className = sender === 'user'
+          ? 'max-w-[85%] rounded-2xl rounded-tr-md bg-blue-600 px-4 py-3 text-sm text-white shadow-md'
+          : 'max-w-[85%] rounded-2xl rounded-tl-md bg-slate-800 px-4 py-3 text-sm text-slate-100 shadow-md whitespace-pre-wrap';
+
+        bubble.textContent = text;
+        wrapper.appendChild(bubble);
+        chat.appendChild(wrapper);
+        scrollToBottom();
+      }
+
+      function addTypingIndicator() {
+        const wrapper = document.createElement('div');
+        wrapper.id = 'typing';
+        wrapper.className = 'flex justify-start';
+
+        const bubble = document.createElement('div');
+        bubble.className = 'max-w-[85%] rounded-2xl rounded-tl-md bg-slate-800 px-4 py-3 text-sm text-slate-100';
+        bubble.textContent = 'सोच रहा हूँ...';
+
+        wrapper.appendChild(bubble);
+        chat.appendChild(wrapper);
+        scrollToBottom();
+      }
+
+      function removeTypingIndicator() {
+        const typing = document.getElementById('typing');
+        if (typing) typing.remove();
+      }
+
+      function escapeHtml(value) {
+        return value
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#039;');
+      }
+
+      form.addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const text = input.value.trim();
+        if (!text) return;
+
+        addMessage(text, 'user');
+        input.value = '';
+        addTypingIndicator();
+
+        try {
+          const response = await fetch('/api/chat', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ message: text })
+          });
+
+          const data = await response.json();
+          removeTypingIndicator();
+
+          if (!response.ok) {
+            throw new Error(data.error || 'Unknown error');
+          }
+
+          addMessage(data.reply || 'No reply received.', 'bot');
+        } catch (error) {
+          removeTypingIndicator();
+          addMessage(error.message || 'Something went wrong. Please try again.', 'bot');
+        }
+      });
+
+      addMessage('नमस्ते! मैं Negi Love Singh AI हूँ। कुछ भी पूछो।', 'bot');
+      input.focus();
+    </script>
+  </body>
+</html>
